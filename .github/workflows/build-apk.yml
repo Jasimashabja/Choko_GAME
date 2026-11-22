@@ -19,7 +19,7 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
-      - name: Unpack ZIP and locate project.godot
+      - name: Unpack ZIP and enable Android ETC2/ASTC compression
         id: locate
         run: |
           mkdir -p work_proj
@@ -34,10 +34,13 @@ jobs:
             exit 1
           fi
           PROJ_DIR=$(cd "$(dirname "$PROJ_FILE")" && pwd)
+          if ! grep -q "import_etc2_astc" "${PROJ_DIR}/project.godot"; then
+            sed -i '/^\[rendering\]/a textures/vram_compression/import_etc2_astc=true' "${PROJ_DIR}/project.godot"
+          fi
           echo "project_dir=$PROJ_DIR" >> "$GITHUB_OUTPUT"
           echo "Project folder: $PROJ_DIR"
 
-      - name: Download Godot 4.7.2 & Android export templates
+      - name: Download Godot 4 & Android export templates
         run: |
           VER="4.7.2-stable"
           BIN_ZIP="Godot_v${VER}_linux.x86_64.zip"
